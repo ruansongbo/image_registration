@@ -1,17 +1,26 @@
 #include <iostream>
 #include "opencv2/opencv.hpp"
-#include "opencv2/core/core.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include <fstream>
+#include <windows.h>
+#define DEBUG
 using namespace cv;
 using namespace std;
+inline void imresize(Mat &src, int height) {
+	double ratio = src.rows * 1.0 / height;
+	int width = static_cast<int>(src.cols * 1.0 / ratio);
+	resize(src, src, Size(width, height));
+}
 int main(int argc, char** argv)
 {
-	Mat obj = imread("C:/Users/Administrator/Desktop/5_1.jpg");   //载入目标图像
-	Mat scene = imread("C:/Users/Administrator/Desktop/5.jpg"); //载入场景图像
+	long start_time = GetTickCount();
+	Mat obj = imread("../data/2.jpg"); //载入目标图像
+	Mat scene = imread("../data/1.jpg");//载入场景图像
+
+	imresize(obj, 480);
+	imresize(scene, 480);
+#ifdef DEBUG1
 	ofstream  pointfile;
 	pointfile.open("C:/Users/Administrator/Desktop/point.txt");
+#endif // DEBUG
 	if (obj.empty() || scene.empty())
 	{
 		cout << "Can't open the picture!\n";
@@ -19,19 +28,19 @@ int main(int argc, char** argv)
 	}
 	vector<KeyPoint> obj_keypoints, scene_keypoints;
 	Mat obj_descriptors, scene_descriptors;
-	ORB detector(10000);     //采用ORB算法提取特征点
-	detector.detect(obj, obj_keypoints);
-	detector.detect(scene, scene_keypoints);
-	detector.compute(obj, obj_keypoints, obj_descriptors);
-	detector.compute(scene, scene_keypoints, scene_descriptors);
+	Ptr<ORB> detector = ORB::create(20000);
+	detector->setFastThreshold(0);
+	detector->detectAndCompute(obj, Mat(), obj_keypoints, obj_descriptors);
+	detector->detectAndCompute(scene, Mat(), scene_keypoints, scene_descriptors);
 	BFMatcher matcher(NORM_HAMMING, true); //汉明距离做为相似度度量
 	vector<DMatch> matches;
 	matcher.match(obj_descriptors, scene_descriptors, matches);
+#ifdef DEBUG
 	Mat match_img;
 	drawMatches(obj, obj_keypoints, scene, scene_keypoints, matches, match_img);
 	imshow("滤除误匹配前", match_img);
-
 	imwrite("match_img.jpg", match_img);
+#endif // DEBUG
 	//保存匹配对序号
 	vector<int> queryIdxs(matches.size()), trainIdxs(matches.size());
 	for (size_t i = 0; i < matches.size(); i++)
@@ -39,15 +48,13 @@ int main(int argc, char** argv)
 		queryIdxs[i] = matches[i].queryIdx;
 		trainIdxs[i] = matches[i].trainIdx;
 	}
-
 	Mat H12;   //变换矩阵
-
 	vector<Point2f> points1; KeyPoint::convert(obj_keypoints, points1, queryIdxs);
 	vector<Point2f> points2; KeyPoint::convert(scene_keypoints, points2, trainIdxs);
 	int ransacReprojThreshold = 3;  //拒绝阈值
-
-
 	H12 = findHomography(Mat(points1),Mat(points2) , CV_RANSAC, ransacReprojThreshold);
+	cout << GetTickCount() - start_time << endl;
+#ifdef DEBUG1
 	pointfile << "H12"<<H12 << endl;
 	vector<char> matchesMask(matches.size(), 0);
 	Mat points1t;
@@ -86,7 +93,7 @@ int main(int argc, char** argv)
 	imshow("img_tran", img_tran);
 	
 	//显示转换后图像
-	/*Mat Template_rgb = imread("C:/Users/Administrator/Desktop/5.jpg");
+	Mat Template_rgb = imread("C:/Users/Administrator/Desktop/5.jpg");
 	Mat Template, img_tran_gray;
 	cvtColor(Template_rgb, Template, CV_BGR2GRAY);
 	cvtColor(img_tran, img_tran_gray, CV_BGR2GRAY);
@@ -127,8 +134,11 @@ int main(int argc, char** argv)
 	printf("max:%d\n", max);
 	printf("min:%d\n", min);
 	printf("white:%d\n", diff.at<uchar>(3, 3));
-	printf("black:%d\n", img_tran.at<uchar>(0, 0));*/
+	printf("black:%d\n", img_tran.at<uchar>(0, 0));
 	pointfile.close();
+#endif // DEBUG
+
+
 	waitKey(0);
 
 	return 0;
