@@ -1,7 +1,7 @@
 #include <iostream>
 #include "opencv2/opencv.hpp"
 #include <windows.h>
-#define DEBUG
+//#define DEBUG
 using namespace cv;
 using namespace std;
 inline void imresize(Mat &src, int height) {
@@ -15,8 +15,8 @@ int main(int argc, char** argv)
 	Mat obj = imread("../data/2.jpg"); //载入目标图像
 	Mat scene = imread("../data/1.jpg");//载入场景图像
 
-	imresize(obj, 480);
-	imresize(scene, 480);
+	//imresize(obj, 480);
+	//imresize(scene, 480);
 #ifdef DEBUG1
 	ofstream  pointfile;
 	pointfile.open("C:/Users/Administrator/Desktop/point.txt");
@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 	}
 	vector<KeyPoint> obj_keypoints, scene_keypoints;
 	Mat obj_descriptors, scene_descriptors;
-	Ptr<ORB> detector = ORB::create(20000);
+	Ptr<ORB> detector = ORB::create(10000);
 	detector->setFastThreshold(0);
 	detector->detectAndCompute(obj, Mat(), obj_keypoints, obj_descriptors);
 	detector->detectAndCompute(scene, Mat(), scene_keypoints, scene_descriptors);

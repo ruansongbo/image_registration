@@ -14,8 +14,8 @@ void runImagePair(){
 	Mat img1 = imread("../data/2.jpg");
 	Mat img2 = imread("../data/1.jpg");
 
-	imresize(img1, 480);
-	imresize(img2, 480);
+	//imresize(img1, 480);
+	//imresize(img2, 480);
 
 	GmsMatch(img1, img2);
 }
@@ -39,9 +39,9 @@ int main()
 void GmsMatch(Mat &img1, Mat &img2){
 	vector<KeyPoint> kp1, kp2;
 	Mat d1, d2;
-	vector<DMatch> matches_all, matches_gms;
+	vector<DMatch> matches_all, matches_gms; 
 
-	Ptr<ORB> orb = ORB::create(20000);
+	Ptr<ORB> orb = ORB::create(10000);
 	orb->setFastThreshold(0);
 	orb->detectAndCompute(img1, Mat(), kp1, d1);
 	orb->detectAndCompute(img2, Mat(), kp2, d2);
