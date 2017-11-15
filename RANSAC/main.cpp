@@ -1,7 +1,8 @@
 #include <iostream>
 #include "opencv2/opencv.hpp"
 #include <windows.h>
-//#define DEBUG
+#define DEBUG
+#define Resize
 using namespace cv;
 using namespace std;
 inline void imresize(Mat &src, int height) {
@@ -11,16 +12,18 @@ inline void imresize(Mat &src, int height) {
 }
 int main(int argc, char** argv)
 {
+	int 
 	long start_time = GetTickCount();
-	Mat obj = imread("../data/2.jpg"); //载入目标图像
-	Mat scene = imread("../data/1.jpg");//载入场景图像
+	//Mat obj = imread("../Data/4.jpg");//载入目标图像
+	//Mat scene = imread("../Data/3.jpg");//载入场景图像
+	Mat obj = imread("C:/Users/Administrator/Desktop/MindVision/1.BMP");//载入目标图像
+	Mat scene = imread("C:/Users/Administrator/Desktop/MindVision/16.BMP");//载入场景图像
+#ifdef Resize
+	imresize(obj, 640);
+	imresize(scene, 640);
+#endif // Resize
 
-	//imresize(obj, 480);
-	//imresize(scene, 480);
-#ifdef DEBUG1
-	ofstream  pointfile;
-	pointfile.open("C:/Users/Administrator/Desktop/point.txt");
-#endif // DEBUG
+	
 	if (obj.empty() || scene.empty())
 	{
 		cout << "Can't open the picture!\n";
@@ -30,7 +33,11 @@ int main(int argc, char** argv)
 	Mat obj_descriptors, scene_descriptors;
 	Ptr<ORB> detector = ORB::create(10000);
 	detector->setFastThreshold(0);
-	detector->detectAndCompute(obj, Mat(), obj_keypoints, obj_descriptors);
+	Mat mask;
+	Rect r1(133, 165, 580, 380);
+	mask = Mat::zeros(scene.size(), CV_8UC1);
+	mask(r1).setTo(255);
+	detector->detectAndCompute(obj, mask, obj_keypoints, obj_descriptors);
 	detector->detectAndCompute(scene, Mat(), scene_keypoints, scene_descriptors);
 	BFMatcher matcher(NORM_HAMMING, true); //汉明距离做为相似度度量
 	vector<DMatch> matches;
@@ -41,7 +48,7 @@ int main(int argc, char** argv)
 	imshow("滤除误匹配前", match_img);
 	imwrite("match_img.jpg", match_img);
 #endif // DEBUG
-	//保存匹配对序号
+	//保存匹配对序号zhouj
 	vector<int> queryIdxs(matches.size()), trainIdxs(matches.size());
 	for (size_t i = 0; i < matches.size(); i++)
 	{
@@ -52,10 +59,11 @@ int main(int argc, char** argv)
 	vector<Point2f> points1; KeyPoint::convert(obj_keypoints, points1, queryIdxs);
 	vector<Point2f> points2; KeyPoint::convert(scene_keypoints, points2, trainIdxs);
 	int ransacReprojThreshold = 3;  //拒绝阈值
-	H12 = findHomography(Mat(points1),Mat(points2) , CV_RANSAC, ransacReprojThreshold);
+	H12 = findHomography(Mat(points2),Mat(points1) , CV_RANSAC, ransacReprojThreshold);
 	cout << GetTickCount() - start_time << endl;
-#ifdef DEBUG1
-	pointfile << "H12"<<H12 << endl;
+
+#ifdef DEBUG
+
 	vector<char> matchesMask(matches.size(), 0);
 	Mat points1t;
 	perspectiveTransform(Mat(points1), points1t, H12);
@@ -64,7 +72,6 @@ int main(int argc, char** argv)
 		if (norm(points2[i1] - points1t.at<Point2f>((int)i1, 0)) <= ransacReprojThreshold) //给内点做标记
 		{
 			matchesMask[i1] = 1;
-			pointfile << points1[i1] << "," << points2[i1] << ";" << endl;
 		}
 	}
 	Mat match_img2;   //滤除‘外点’后
@@ -87,56 +94,29 @@ int main(int argc, char** argv)
 
 	imshow("滤除误匹配后", match_img2);
 	imwrite("match_img2.jpg", match_img2);
+#endif // DEBUG	
 	Mat img_tran;
 	img_tran = Mat::zeros(obj.rows, obj.cols, obj.type());
-	warpPerspective(obj, img_tran, H12, img_tran.size());
+	warpPerspective(scene, img_tran, H12, img_tran.size());
 	imshow("img_tran", img_tran);
-	
+
 	//显示转换后图像
-	Mat Template_rgb = imread("C:/Users/Administrator/Desktop/5.jpg");
+	Mat Template_rgb = imread("C:/Users/Administrator/Desktop/MindVision/1.BMP");
+	//Mat Template_rgb = imread("../Data/3.jpg");
+#ifdef Resize
+	imresize(Template_rgb, 640);
+#endif // Resize
+
+	
 	Mat Template, img_tran_gray;
 	cvtColor(Template_rgb, Template, CV_BGR2GRAY);
 	cvtColor(img_tran, img_tran_gray, CV_BGR2GRAY);
 	Mat diff, BW_image;
-	float num = (393 - 131 + 1)*(531 - 113 + 1);
-	float sum = 0;
-	for (int i = 131; i <= 393; i++)
-	{
-		for (int j = 113; j <= 531; j++)
-		{
-			float temp = Template.at<uchar>(i, j) - img_tran_gray.at<uchar>(i, j);
-			sum += temp*temp;
-		}
-	}
-	float mean = sum / num;
-	printf("pixel:%f\n", mean);
 	absdiff(Template, img_tran_gray, diff);
-	imshow("ss", diff);
-	imwrite("original.jpg", diff);
-	float ssum = 0.;
-	uchar max = 0, min = 0;
-	for (int i = 0; i < diff.rows; i++)
-	{
-		for (int j = 0; j < diff.cols; j++)
-		{
-			if (diff.at<uchar>(i, j)<250)
-			{
-				ssum += diff.at<uchar>(i, j);
-				if (diff.at<uchar>(i, j)>max)
-					max = diff.at<uchar>(i, j);
-				if (diff.at<uchar>(i, j) < min)
-					min = diff.at<uchar>(i, j);
-			}
-			
-		}
-	}
-	printf("pixel:%f\n", ssum / (diff.rows*diff.cols));
-	printf("max:%d\n", max);
-	printf("min:%d\n", min);
-	printf("white:%d\n", diff.at<uchar>(3, 3));
-	printf("black:%d\n", img_tran.at<uchar>(0, 0));
-	pointfile.close();
-#endif // DEBUG
+	//imshow("ss", diff);
+	imwrite("C:/Users/Administrator/Desktop/diff_160.jpg", diff);
+
+
 
 
 	waitKey(0);

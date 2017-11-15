@@ -7,10 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GMS", "GMS\GMS.vcxproj", "{
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RANSAC", "RANSAC\RANSAC.vcxproj", "{5C770058-9C5E-46C2-A49A-2150EA988643}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6EDA8914-D445-41EA-BED1-D2B62D8FFCAA}"
-	ProjectSection(SolutionItems) = preProject
-		Performance1.psess = Performance1.psess
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Template", "Template\Template.vcxproj", "{BC583D76-CB11-4D0B-84D3-D4CA0485919E}"
 EndProject
 Global
 	GlobalSection(Performance) = preSolution
@@ -39,6 +36,14 @@ Global
 		{5C770058-9C5E-46C2-A49A-2150EA988643}.Release|x64.Build.0 = Release|x64
 		{5C770058-9C5E-46C2-A49A-2150EA988643}.Release|x86.ActiveCfg = Release|Win32
 		{5C770058-9C5E-46C2-A49A-2150EA988643}.Release|x86.Build.0 = Release|Win32
+		{BC583D76-CB11-4D0B-84D3-D4CA0485919E}.Debug|x64.ActiveCfg = Debug|x64
+		{BC583D76-CB11-4D0B-84D3-D4CA0485919E}.Debug|x64.Build.0 = Debug|x64
+		{BC583D76-CB11-4D0B-84D3-D4CA0485919E}.Debug|x86.ActiveCfg = Debug|Win32
+		{BC583D76-CB11-4D0B-84D3-D4CA0485919E}.Debug|x86.Build.0 = Debug|Win32
+		{BC583D76-CB11-4D0B-84D3-D4CA0485919E}.Release|x64.ActiveCfg = Release|x64
+		{BC583D76-CB11-4D0B-84D3-D4CA0485919E}.Release|x64.Build.0 = Release|x64
+		{BC583D76-CB11-4D0B-84D3-D4CA0485919E}.Release|x86.ActiveCfg = Release|Win32
+		{BC583D76-CB11-4D0B-84D3-D4CA0485919E}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
